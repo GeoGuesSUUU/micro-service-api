@@ -2,24 +2,33 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\MessageRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MessageRepository::class)]
+#[ApiResource(
+    normalizationContext: [ 'groups' => ['message', 'user'] ]
+)]
 class Message
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(groups: ['message'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
+    #[Groups(groups: ['message'])]
     private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
+    #[Groups(groups: ['message'])]
     private ?User $seller = null;
 
     #[ORM\Column(length: 2048)]
+    #[Groups(groups: ['message'])]
     private ?string $content = null;
 
     public function getId(): ?int

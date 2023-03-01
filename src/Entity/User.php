@@ -47,11 +47,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     private string $name;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(groups: ['user', 'login'])]
+    #[Groups(groups: ['user', 'user:login'])]
     private ?string $email = null;
 
     #[ORM\Column]
-    #[Groups(groups: ['user'])]
     private array $roles = [];
 
     /**
@@ -60,8 +59,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     #[ORM\Column(length: 255)]
     private string $password;
 
-    #[Assert\NotBlank(groups: ['user:create'])]
-    #[Groups(['user:create', 'user:update', 'login'])]
+    #[Assert\NotBlank(groups: ['user:login'])]
+    #[Groups(['user:login'])]
     private ?string $plainPassword = null;
 
     #[ORM\ManyToOne(inversedBy: 'sellers')]

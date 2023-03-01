@@ -2,16 +2,22 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\SlotRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: SlotRepository::class)]
+#[ApiResource(
+    normalizationContext: [ 'groups' => ['slot', 'store', 'user'] ]
+)]
 class Slot
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(groups: ['slot', 'slot:min'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'slots')]
@@ -21,9 +27,11 @@ class Slot
     private ?User $user = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(groups: ['slot', 'slot:min'])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(groups: ['slot', 'slot:min'])]
     private ?\DateTimeInterface $endDate = null;
 
     public function getId(): ?int

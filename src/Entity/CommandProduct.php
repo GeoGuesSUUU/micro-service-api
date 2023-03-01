@@ -2,8 +2,10 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CommandProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommandProductRepository::class)]
 class CommandProduct
@@ -17,9 +19,11 @@ class CommandProduct
     private ?Command $command = null;
 
     #[ORM\ManyToOne(inversedBy: 'commandProducts')]
+    #[Groups(groups: ['command:products'])]
     private ?Product $product = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['command:products'])]
     private ?int $quantity = null;
 
     public function getId(): ?int

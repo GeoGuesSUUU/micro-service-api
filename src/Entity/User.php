@@ -52,7 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
 
     #[ORM\Column]
     #[Groups(groups: ['user'])]
-    private array $roles = [];
+    private array $roles = ['ROLE_USER'];
 
     /**
      * @var string The hashed password

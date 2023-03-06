@@ -31,7 +31,7 @@ class Store
 
     #[ORM\Column]
     #[Groups(groups: ['store'])]
-    private ?int $zip = null;
+    private ?string $zip = null;
 
     #[ORM\OneToMany(mappedBy: 'store', targetEntity: User::class)]
     #[Groups(groups: ['store:sellers'])]
@@ -84,12 +84,12 @@ class Store
         return $this;
     }
 
-    public function getZip(): ?int
+    public function getZip(): ?string
     {
         return $this->zip;
     }
 
-    public function setZip(int $zip): self
+    public function setZip(string $zip): self
     {
         $this->zip = $zip;
 

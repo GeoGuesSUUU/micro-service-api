@@ -2,8 +2,10 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiResource;
 use App\Repository\StoreProductRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StoreProductRepository::class)]
 class StoreProduct
@@ -14,12 +16,14 @@ class StoreProduct
     private ?int $id = null;
 
     #[ORM\Column]
+    #[Groups(groups: ['store:products'])]
     private ?int $quantity = null;
 
     #[ORM\ManyToOne(inversedBy: 'storages')]
     private ?Store $store = null;
 
     #[ORM\ManyToOne(inversedBy: 'storages')]
+    #[Groups(groups: ['store:products'])]
     private ?Product $product = null;
 
     public function getId(): ?int

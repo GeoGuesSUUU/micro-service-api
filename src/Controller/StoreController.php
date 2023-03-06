@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Exception\ProductNotFoundApiException;
 use App\Exception\StoreNotFoundApiException;
 use App\Service\StoreService;
 use App\Service\UserService;
@@ -33,7 +34,7 @@ class StoreController extends AbstractController
 
     #[Route('/{id}/products', name: 'app_store_products', methods: ['GET'], format: 'application/json')]
     public function products(
-        string       $id,
+        int       $id,
         StoreService $storeService
     ): Response
     {
@@ -43,6 +44,22 @@ class StoreController extends AbstractController
             200,
             [],
             ['groups' => ['store', 'store:products', 'product']]
+        );
+    }
+
+    #[Route('/{storeId}/products/{productId}', name: 'app_store_items_available', methods: ['GET'], format: 'application/json')]
+    public function available(
+        int       $storeId,
+        int       $productId,
+        StoreService $storeService
+    ): Response
+    {
+        $product = $storeService->getProduct($storeId, $productId);
+        if (is_null($product)) throw new ProductNotFoundApiException();
+        return $this->json(ApiResponse::get($product),
+            200,
+            [],
+            ['groups' => ['product']]
         );
     }
 }

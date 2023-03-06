@@ -25,10 +25,6 @@ class Product
     #[Groups(groups: ['product'])]
     private ?string $name = null;
 
-    #[ORM\Column]
-    #[Groups(groups: ['product'])]
-    private ?float $price = null;
-
     #[ORM\OneToMany(mappedBy: 'product', targetEntity: StoreProduct::class)]
     private Collection $storeProducts;
 
@@ -54,18 +50,6 @@ class Product
     public function setName(string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getPrice(): ?float
-    {
-        return $this->price;
-    }
-
-    public function setPrice(float $price): self
-    {
-        $this->price = $price;
 
         return $this;
     }

@@ -19,6 +19,10 @@ class StoreProduct
     #[Groups(groups: ['store:products'])]
     private ?int $quantity = null;
 
+    #[ORM\Column]
+    #[Groups(groups: ['store:products'])]
+    private ?float $price = null;
+
     #[ORM\ManyToOne(inversedBy: 'storages')]
     private ?Store $store = null;
 
@@ -39,6 +43,18 @@ class StoreProduct
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(float $price): self
+    {
+        $this->price = $price;
 
         return $this;
     }

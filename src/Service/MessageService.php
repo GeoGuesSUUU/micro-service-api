@@ -25,6 +25,16 @@ class MessageService
 
     /**
      * @param User $user
+     * @param int $page
+     * @param int $limit
+     * @return Message[]
+     */
+    public function getAllByDestUserPagination(User $user, int $page, int $limit): array {
+        return $this->messageRepository->findAllBySellerWithPagination($user->getId(), $page, $limit);
+    }
+
+    /**
+     * @param User $user
      * @param int $id
      * @return Message|null
      */

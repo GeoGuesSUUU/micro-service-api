@@ -75,6 +75,8 @@ class SellerController extends AbstractController
 
     /**
      * Get all Messages (Only Seller)
+     * @OA\Parameter(name="page", in="query")
+     * @OA\Parameter(name="limit", in="query")
      * @OA\Response(
      *     response=200,
      *     description="Return all your messages if you're seller",
@@ -85,19 +87,24 @@ class SellerController extends AbstractController
      * )
      * @param UserService $userService
      * @param MessageService $messageService
+     * @param Request $request
      * @return Response
      */
     #[Route('/messages', name: 'app_seller_message_all', methods: ['GET'], format: 'application/json')]
     public function seeAll(
         UserService $userService,
-        MessageService $messageService
+        MessageService $messageService,
+        Request $request
     ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
         if ($userService->isSeller($user)) throw new UserNotSellerApiException();
 
-        $messages = $messageService->getAllByDestUser($user);
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 20);
+
+        $messages = $messageService->getAllByDestUserPagination($user, $page, $limit);
 
         return $this->json(ApiResponse::get($messages),
             200,

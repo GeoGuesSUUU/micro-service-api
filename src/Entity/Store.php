@@ -11,7 +11,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StoreRepository::class)]
 #[ApiResource(
-    normalizationContext: [ 'groups' => ['store'] ]
+    normalizationContext: ['groups' => ['store']]
 )]
 class Store
 {
@@ -216,3 +216,4 @@ class Store
         return $this;
     }
 }
+

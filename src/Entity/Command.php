@@ -33,7 +33,7 @@ class Command
     #[Groups(groups: ['command'])]
     private ?User $user = null;
 
-    #[ORM\OneToMany(mappedBy: 'command', targetEntity: CommandProduct::class)]
+    #[ORM\OneToMany(mappedBy: 'command', targetEntity: CommandProduct::class, cascade: ['persist'])]
     #[Groups(groups: ['command:products'])]
     private Collection $commandProducts;
 

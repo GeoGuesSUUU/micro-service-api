@@ -9,13 +9,16 @@ use App\Entity\StoreProduct;
 use App\Entity\User;
 use App\Repository\CommandProductRepository;
 use App\Repository\CommandRepository;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 class CommandService
 {
 
     public function __construct(
         private readonly CommandRepository $commandRepository,
-        private readonly CommandProductRepository $commandProductRepository
+        private readonly CommandProductRepository $commandProductRepository,
+        private readonly MailerInterface $mailer
     )
     {
     }
@@ -65,9 +68,17 @@ class CommandService
         return $command;
     }
 
-    public function validCommand(Command $command, bool $flush = false): Command {
+    public function validCommand(Command $command, User $user, bool $flush = false): Command {
         $command->setIsValid(true);
         $this->commandRepository->save($command, $flush);
+
+        $email = (new Email())
+            ->from('grosbidon6969@gmail.com')
+            ->to($user->getEmail())
+            ->subject('Command validated !')
+            ->text('Hello ' . $user->getName() . ' your command ' . $command->getId() . ' is validated !');
+
+        $this->mailer->send($email);
 
         return $command;
     }

@@ -61,7 +61,7 @@ class UserApiController extends AbstractController
         $command = $commandService->get($commandId);
         if (is_null($command)) throw new CommandNotFoundApiException();
 
-        $command = $commandService->validCommand($command, true);
+        $command = $commandService->validCommand($command, $user, true);
         return $this->json(ApiResponse::get($command),
             200,
             [],

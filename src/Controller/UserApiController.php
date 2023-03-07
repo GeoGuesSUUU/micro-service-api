@@ -55,7 +55,7 @@ class UserApiController extends AbstractController
         UserService $userService,
     ): Response
     {
-        $user = $userService->get($userId);
+        $user = $userService->getById($userId);
         if (is_null($user)) throw new UserNotFoundApiException();
 
         $command = $commandService->get($commandId);

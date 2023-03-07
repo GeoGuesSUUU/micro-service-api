@@ -126,7 +126,7 @@ class StoreController extends AbstractController
         );
     }
 
-    #[Route('/{storeId}/slots/{slotId}/booking', name: 'app_store_slots', methods: ['POST'], format: 'application/json')]
+    #[Route('/{storeId}/slots/{slotId}/booking', name: 'app_store_slots_booking', methods: ['POST'], format: 'application/json')]
     public function slotBooking(
         int       $storeId,
         int       $slotId,

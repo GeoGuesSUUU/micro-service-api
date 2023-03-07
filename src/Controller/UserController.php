@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class UserApiController extends AbstractController
+class UserController extends AbstractController
 {
 
     #[Route('/api/auth/login', name: 'app_user_api_login', methods: ['POST'], format: 'application/json')]

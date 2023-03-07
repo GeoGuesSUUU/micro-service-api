@@ -58,6 +58,33 @@ class StoreService
         return $res->getProduct();
     }
 
+    public function addProductInStore(Store $store, Product $product, int $quantity = 0, int $price = 0): Store | null
+    {
+        $storeProduct = $this->storeProductRepository->findOneBy(['store' => $store, 'product' => $product]);
+        if (is_null($storeProduct)) {
+            $storeProduct = new StoreProduct();
+            $storeProduct->setStore($store);
+            $storeProduct->setProduct($product);
+            $storeProduct->setQuantity($quantity);
+            $storeProduct->setPrice($price);
+        } else {
+            $storeProduct->setQuantity($storeProduct->getQuantity() + $quantity);
+            $storeProduct->setPrice($storeProduct->getPrice() + $price);
+        }
+
+        $this->storeProductRepository->save($storeProduct, true);
+
+        return $store;
+    }
+
+    public function removeProductInStore(Store $store, Product $product): Store | null
+    {
+        $storeProduct = $this->storeProductRepository->findOneBy(['store' => $store, 'product' => $product]);
+        $this->storeProductRepository->remove($storeProduct, true);
+
+        return $store;
+    }
+
     /**
      * @param int $storeId
      * @param int[] $productIds

@@ -3,18 +3,16 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\SlotAlreadyBookedApiException;
 use App\Exception\SlotNotFoundApiException;
 use App\Exception\StoreNotFoundApiException;
 use App\Service\CommandService;
+use App\Service\ProductService;
 use App\Service\SlotService;
 use App\Service\StoreService;
-use App\Service\UserService;
 use App\Utils\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -66,6 +64,56 @@ class StoreController extends AbstractController
             200,
             [],
             ['groups' => ['product']]
+        );
+    }
+
+    #[Route('/{storeId}/products/{productId}', name: 'app_store_add_product', methods: ['POST'], format: 'application/json')]
+    public function addProduct(
+        int       $storeId,
+        int       $productId,
+        StoreService $storeService,
+        ProductService $productService,
+        Request $request
+    ): Response
+    {
+        $store = $storeService->get($storeId);
+        if (is_null($store)) throw new StoreNotFoundApiException();
+
+        $product = $productService->get($productId);
+        if (is_null($product)) throw new ProductNotFoundApiException();
+
+        $quantity = $request->get('quantity');
+        $price = $request->get('price');
+
+        $storeService->addProductInStore($store, $product, $quantity, $price);
+
+        return $this->json(ApiResponse::get($store),
+            200,
+            [],
+            ['groups' => ['store', 'store:products', 'product']]
+        );
+    }
+
+    #[Route('/{storeId}/products/{productId}', name: 'app_store_remove_product', methods: ['DELETE'], format: 'application/json')]
+    public function removeProduct(
+        int       $storeId,
+        int       $productId,
+        StoreService $storeService,
+        ProductService $productService,
+    ): Response
+    {
+        $store = $storeService->get($storeId);
+        if (is_null($store)) throw new StoreNotFoundApiException();
+
+        $product = $storeService->getProduct($storeId, $productId);
+        if (is_null($product)) throw new ProductNotFoundApiException();
+
+        $storeService->removeProductInStore($store, $product);
+
+        return $this->json(ApiResponse::get($store),
+            200,
+            [],
+            ['groups' => ['store', 'store:products', 'product']]
         );
     }
 

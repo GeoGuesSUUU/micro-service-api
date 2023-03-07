@@ -48,6 +48,17 @@ class SlotService
     }
 
     /**
+     * @param Store $store
+     * @param int $page
+     * @param int $limit
+     * @return SlotAvailableDTO[]
+     */
+    public function availableListPagination(Store $store, int $page, int $limit): array {
+        $slots = $this->slotRepository->findAllByStoreWithPagination($store->getId(), $page, $limit);
+        return array_map(fn($s) => $this->slotToSlotAvailable($s), $slots);
+    }
+
+    /**
      * @param Slot $slot
      * @param bool $flush
      * @return Slot

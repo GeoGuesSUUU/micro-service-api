@@ -3,8 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Store;
+use App\Entity\Product;
+use App\Entity\Command;
+use App\Entity\StoreCommandInput;
+use App\Entity\SlotAvailableDTO;
 use App\Exception\BadRequestApiException;
-use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\SlotAlreadyBookedApiException;
 use App\Exception\SlotNotFoundApiException;
@@ -18,19 +22,44 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OAA;
 
+#[OAA\Tag(name: 'Store (Products, Commands & Slots)')]
+#[Security(name: 'Bearer')]
 #[Route('/api/stores')]
 class StoreController extends AbstractController
 {
+    /**
+     * Get all Store By ZIP code (Only Seller)
+     * @OA\Parameter(name="page", in="query")
+     * @OA\Parameter(name="limit", in="query")
+     * @OA\Response(
+     *     response=200,
+     *     description="Return all store by zip code",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Store::class, groups={"store"}))
+     *     )
+     * )
+     * @param string $zip
+     * @param StoreService $storeService
+     * @param Request $request
+     * @return Response
+     */
     #[Route('/nearest/{zip}', name: 'app_store_nearest', methods: ['GET'], format: 'application/json')]
     public function nearest(
         string       $zip,
-        StoreService $storeService
+        StoreService $storeService,
+        Request $request
     ): Response
     {
-        $stores = $storeService->getAllByZip($zip);
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 20);
+
+        $stores = $storeService->getAllByZipPagination($zip, $page, $limit);
         return $this->json(ApiResponse::get($stores),
             200,
             [],
@@ -38,6 +67,21 @@ class StoreController extends AbstractController
         );
     }
 
+    /**
+     * Get Store By ID and all products
+     * @OA\Response(
+     *     response=200,
+     *     description="Return one store by ID and it products",
+     *     @Model(type=Store::class, groups={"store", "store:products", "product"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Store not found"
+     * )
+     * @param int $id
+     * @param StoreService $storeService
+     * @return Response
+     */
     #[Route('/{id}/products', name: 'app_store_products', methods: ['GET'], format: 'application/json')]
     public function products(
         int       $id,
@@ -53,6 +97,22 @@ class StoreController extends AbstractController
         );
     }
 
+    /**
+     * Get Product By ID from Store
+     * @OA\Response(
+     *     response=200,
+     *     description="Return one product by ID",
+     *     @Model(type=Product::class, groups={"product"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Product not found"
+     * )
+     * @param int $storeId
+     * @param int $productId
+     * @param StoreService $storeService
+     * @return Response
+     */
     #[Route('/{storeId}/products/{productId}', name: 'app_store_items_available', methods: ['GET'], format: 'application/json')]
     public function available(
         int       $storeId,
@@ -69,6 +129,28 @@ class StoreController extends AbstractController
         );
     }
 
+    /**
+     * Add Product By ID in selected Store
+     * @OA\Response(
+     *     response=200,
+     *     description="Return one store by ID and it products",
+     *     @Model(type=Store::class, groups={"store", "store:products", "product"})
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="Bad Request"
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Product not found"
+     * )
+     * @param int $storeId
+     * @param int $productId
+     * @param StoreService $storeService
+     * @param ProductService $productService
+     * @param Request $request
+     * @return Response
+     */
     #[Route('/{storeId}/products/{productId}', name: 'app_store_add_product', methods: ['POST'], format: 'application/json')]
     public function addProduct(
         int       $storeId,
@@ -99,6 +181,23 @@ class StoreController extends AbstractController
         );
     }
 
+    /**
+     * Remove Product By ID in selected Store
+     * @OA\Response(
+     *     response=200,
+     *     description="Return one store by ID and it products",
+     *     @Model(type=Store::class, groups={"store", "store:products", "product"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Product not found"
+     * )
+     * @param int $storeId
+     * @param int $productId
+     * @param StoreService $storeService
+     * @param ProductService $productService
+     * @return Response
+     */
     #[Route('/{storeId}/products/{productId}', name: 'app_store_remove_product', methods: ['DELETE'], format: 'application/json')]
     public function removeProduct(
         int       $storeId,
@@ -122,8 +221,26 @@ class StoreController extends AbstractController
         );
     }
 
+    /**
+     * Command Products from select Store Products
+     * @OA\RequestBody(@Model(type=StoreCommandInput::class, groups={"store:command:input"}))
+     * @OA\Response(
+     *     response=200,
+     *     description="Return Command",
+     *     @Model(type=Command::class, groups={"command", "command:products", "product", "user", "store", "slot"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Store not found"
+     * )
+     * @param int $storeId
+     * @param StoreService $storeService
+     * @param CommandService $commandService
+     * @param Request $request
+     * @return Response
+     */
     #[Route('/{storeId}/commands', name: 'app_store_commands', methods: ['POST'], format: 'application/json')]
-    public function buy(
+    public function commandProduct(
         int       $storeId,
         StoreService $storeService,
         CommandService $commandService,
@@ -137,8 +254,6 @@ class StoreController extends AbstractController
 
         $productIds = $content['products'];
         if (is_null($productIds)) throw new ProductNotFoundApiException();
-        $productIds = explode(",", $productIds);
-        $productIds = array_map(fn($i) => intval($i), $productIds);
 
         $commandId = $content['command'];
 
@@ -158,10 +273,28 @@ class StoreController extends AbstractController
         return $this->json(ApiResponse::get($command),
             200,
             [],
-            ['groups' => ['command', 'command:products', 'product']]
+            ['groups' => ['command', 'command:products', 'product', 'user', 'store', 'slot']]
         );
     }
 
+    /**
+     * Get all Slots form Store (Only Client)
+     * @OA\Parameter(name="page", in="query")
+     * @OA\Parameter(name="limit", in="query")
+     * @OA\Response(
+     *     response=200,
+     *     description="Return all slots from store",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=SlotAvailableDTO::class, groups={"slot:available"}))
+     *     )
+     * )
+     * @param int $storeId
+     * @param StoreService $storeService
+     * @param SlotService $slotService
+     * @param Request $request
+     * @return Response
+     */
     #[Route('/{storeId}/slots', name: 'app_store_slots', methods: ['GET'], format: 'application/json')]
     public function slots(
         int       $storeId,
@@ -173,7 +306,10 @@ class StoreController extends AbstractController
         $store = $storeService->get($storeId);
         if (is_null($store)) throw new StoreNotFoundApiException();
 
-        $slots = $slotService->availableList($store);
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 20);
+
+        $slots = $slotService->availableListPagination($store, $page, $limit);
         return $this->json(ApiResponse::get($slots),
             200,
             [],
@@ -181,6 +317,28 @@ class StoreController extends AbstractController
         );
     }
 
+    /**
+     * Book a Slot form Store (Only Client)
+     * @OA\Response(
+     *     response=200,
+     *     description="Return all slots from store",
+     *     @Model(type=SlotAvailableDTO::class, groups={"slot:available"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Slot not found"
+     * )
+     * @OA\Response(
+     *     response=409,
+     *     description="Slot already booked"
+     * )
+     * @param int $storeId
+     * @param int $slotId
+     * @param StoreService $storeService
+     * @param SlotService $slotService
+     * @param Request $request
+     * @return Response
+     */
     #[Route('/{storeId}/slots/{slotId}/booking', name: 'app_store_slots_booking', methods: ['POST'], format: 'application/json')]
     public function slotBooking(
         int       $storeId,
@@ -207,28 +365,4 @@ class StoreController extends AbstractController
             ['groups' => ['slot:available']]
         );
     }
-
-//    #[Route('/{storeId}/products/buy', name: 'app_store_items_buy', methods: ['GET'], format: 'application/json')]
-//    public function buy(
-//        int       $storeId,
-//        StoreService $storeService,
-//        Request $request
-//    ): Response
-//    {
-//        /** @var User $user */
-//        $user = $this->getUser();
-//
-//        $products = $request->query->get('product');
-//        // TODO : finish this optional function
-//
-//        $store = $storeService->get($storeId);
-//        if (is_null($store)) throw new StoreNotFoundApiException();
-//
-//        $command = $storeService->buyItems($store);
-//        return $this->json(ApiResponse::get($command),
-//            200,
-//            [],
-//            ['groups' => ['product']]
-//        );
-//    }
 }

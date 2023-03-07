@@ -3,16 +3,16 @@
 namespace App\Controller;
 
 use App\Entity\User;
-use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\SlotAlreadyBookedApiException;
 use App\Exception\SlotNotFoundApiException;
 use App\Exception\StoreNotFoundApiException;
+use App\Service\CommandService;
+use App\Service\ProductService;
+use App\Service\SlotService;
 use App\Service\StoreService;
-use App\Service\UserService;
 use App\Utils\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -94,7 +94,7 @@ class StoreController extends AbstractController
         );
     }
 
-    #[Route('/{storeId}/products/{productId}', name: 'app_store_add_product', methods: ['DELETE'], format: 'application/json')]
+    #[Route('/{storeId}/products/{productId}', name: 'app_store_remove_product', methods: ['DELETE'], format: 'application/json')]
     public function removeProduct(
         int       $storeId,
         int       $productId,

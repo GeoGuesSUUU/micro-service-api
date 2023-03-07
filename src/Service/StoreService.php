@@ -2,8 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\Command;
+use App\Entity\CommandProduct;
 use App\Entity\Product;
 use App\Entity\Store;
+use App\Entity\StoreProduct;
 use App\Repository\StoreProductRepository;
 use App\Repository\StoreRepository;
 
@@ -12,8 +15,7 @@ class StoreService
 
     public function __construct(
         private readonly StoreRepository $storeRepository,
-        private readonly StoreProductRepository $storeProductRepository,
-        private readonly ProductRepository $productRepository,
+        private readonly StoreProductRepository $storeProductRepository
     )
     {
     }

@@ -18,15 +18,15 @@ class ApiResponse
             throw new BadRequestApiException();
         }
         $response = [
-            'response' => [
+            'meta-data' => [
                 'status' => $httpStatus,
                 'request' => $_SERVER["REQUEST_URI"],
                 'method' => $_SERVER["REQUEST_METHOD"],
             ],
-            'items' => $value ?? "",
+            'response' => $value ?? "",
         ];
         if (is_array($value)) {
-            $response['response']['total'] = count($value);
+            $response['meta-data']['total'] = count($value);
         }
         return $response;
     }

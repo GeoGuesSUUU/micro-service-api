@@ -4,6 +4,8 @@ namespace App\Service;
 
 use App\Entity\Product;
 use App\Entity\Store;
+use App\Entity\StoreProduct;
+use App\Repository\ProductRepository;
 use App\Repository\StoreProductRepository;
 use App\Repository\StoreRepository;
 
@@ -12,7 +14,8 @@ class StoreService
 
     public function __construct(
         private readonly StoreRepository $storeRepository,
-        private readonly StoreProductRepository $storeProductRepository
+        private readonly StoreProductRepository $storeProductRepository,
+        private readonly ProductRepository $productRepository,
     )
     {
     }
@@ -53,5 +56,32 @@ class StoreService
         $res = $this->storeProductRepository->findOneBy(['store' => $storeId, 'product' => $productId]);
         if (is_null($res)) return null;
         return $res->getProduct();
+    }
+
+    public function addProductInStore(Store $store, Product $product, int $quantity = 0, int $price = 0): Store | null
+    {
+        $storeProduct = $this->storeProductRepository->findOneBy(['store' => $store, 'product' => $product]);
+        if (is_null($storeProduct)) {
+            $storeProduct = new StoreProduct();
+            $storeProduct->setStore($store);
+            $storeProduct->setProduct($product);
+            $storeProduct->setQuantity($quantity);
+            $storeProduct->setPrice($price);
+        } else {
+            $storeProduct->setQuantity($storeProduct->getQuantity() + $quantity);
+            $storeProduct->setPrice($storeProduct->getPrice() + $price);
+        }
+
+        $this->storeProductRepository->save($storeProduct, true);
+
+        return $store;
+    }
+
+    public function removeProductInStore(Store $store, Product $product): Store | null
+    {
+        $storeProduct = $this->storeProductRepository->findOneBy(['store' => $store, 'product' => $product]);
+        $this->storeProductRepository->remove($storeProduct, true);
+
+        return $store;
     }
 }

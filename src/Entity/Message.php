@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\MessageRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
@@ -30,6 +31,10 @@ class Message
     #[ORM\Column(length: 2048)]
     #[Groups(groups: ['message'])]
     private ?string $content = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(groups: ['message'])]
+    private ?\DateTimeInterface $sendDate = null;
 
     public function getId(): ?int
     {
@@ -70,5 +75,21 @@ class Message
         $this->content = $content;
 
         return $this;
+    }
+
+    /**
+     * @return \DateTimeInterface|null
+     */
+    public function getSendDate(): ?\DateTimeInterface
+    {
+        return $this->sendDate;
+    }
+
+    /**
+     * @param \DateTimeInterface|null $sendDate
+     */
+    public function setSendDate(?\DateTimeInterface $sendDate): void
+    {
+        $this->sendDate = $sendDate;
     }
 }

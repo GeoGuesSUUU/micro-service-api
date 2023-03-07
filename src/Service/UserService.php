@@ -93,4 +93,14 @@ class UserService
         ];
     }
 
+    public function getById(int $id): User | null
+    {
+        return $this->userRepository->findOneBy(['id' => $id]);
+    }
+
+    public function isSeller(User $user): bool
+    {
+        return array_search('ROLE_SELLER', $user->getRoles());
+    }
+
 }

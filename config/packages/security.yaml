@@ -49,9 +49,11 @@ security:
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/api/auth/check, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/users, method: POST, roles: PUBLIC_ACCESS }
         - { path: ^/api$, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
+
+    role_hierarchy:
+        ROLE_SELLER: ROLE_USER
 
 
 when@test:

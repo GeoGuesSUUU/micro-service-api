@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Exception\BadRequestApiException;
+use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\SlotAlreadyBookedApiException;
 use App\Exception\SlotNotFoundApiException;
@@ -82,8 +84,11 @@ class StoreController extends AbstractController
         $product = $productService->get($productId);
         if (is_null($product)) throw new ProductNotFoundApiException();
 
-        $quantity = $request->get('quantity');
-        $price = $request->get('price');
+        $content = json_decode($request->getContent(), true);
+        if (is_null($content['quantity'] ?? null) || is_null($content['price'] ?? null)) throw new BadRequestApiException();
+
+        $quantity = $content['quantity'];
+        $price = $content['price'];
 
         $storeService->addProductInStore($store, $product, $quantity, $price);
 
@@ -127,12 +132,15 @@ class StoreController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-        $productIds = $request->query->get('products');
+
+        $content = json_decode($request->getContent(), true);
+
+        $productIds = $content['products'];
         if (is_null($productIds)) throw new ProductNotFoundApiException();
         $productIds = explode(",", $productIds);
         $productIds = array_map(fn($i) => intval($i), $productIds);
 
-        $commandId = $request->query->get('command');
+        $commandId = $content['command'];
 
         $store = $storeService->get($storeId);
         if (is_null($store)) throw new StoreNotFoundApiException();
@@ -162,7 +170,6 @@ class StoreController extends AbstractController
         Request $request
     ): Response
     {
-
         $store = $storeService->get($storeId);
         if (is_null($store)) throw new StoreNotFoundApiException();
 
@@ -183,7 +190,6 @@ class StoreController extends AbstractController
         Request $request
     ): Response
     {
-
         /** @var User $user */
         $user = $this->getUser();
 

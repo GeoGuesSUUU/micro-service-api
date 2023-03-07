@@ -112,8 +112,6 @@ class StoreController extends AbstractController
         Request $request
     ): Response
     {
-        /** @var User $user */
-        $user = $this->getUser();
 
         $store = $storeService->get($storeId);
         if (is_null($store)) throw new StoreNotFoundApiException();

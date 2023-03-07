@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
+use App\Exception\SlotAlreadyBookedApiException;
+use App\Exception\SlotNotFoundApiException;
 use App\Exception\StoreNotFoundApiException;
 use App\Service\CommandService;
 use App\Service\SlotService;
@@ -104,7 +106,7 @@ class StoreController extends AbstractController
         );
     }
 
-    #[Route('/{storeId}/slots', name: 'app_store_slots', methods: ['POST'], format: 'application/json')]
+    #[Route('/{storeId}/slots', name: 'app_store_slots', methods: ['GET'], format: 'application/json')]
     public function slots(
         int       $storeId,
         StoreService $storeService,
@@ -117,6 +119,34 @@ class StoreController extends AbstractController
         if (is_null($store)) throw new StoreNotFoundApiException();
 
         $slots = $slotService->availableList($store);
+        return $this->json(ApiResponse::get($slots),
+            200,
+            [],
+            ['groups' => ['slot:available']]
+        );
+    }
+
+    #[Route('/{storeId}/slots/{slotId}/booking', name: 'app_store_slots', methods: ['POST'], format: 'application/json')]
+    public function slotBooking(
+        int       $storeId,
+        int       $slotId,
+        StoreService $storeService,
+        SlotService $slotService,
+        Request $request
+    ): Response
+    {
+
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $store = $storeService->get($storeId);
+        if (is_null($store ?? null)) throw new StoreNotFoundApiException();
+
+        $slot = $slotService->getByIdAndStore($slotId, $store);
+        if (is_null($slot ?? null)) throw new SlotNotFoundApiException();
+
+        $slots = $slotService->bookSlot($slot, $user, true);
+        if (is_null($slots ?? null)) throw new SlotAlreadyBookedApiException();
         return $this->json(ApiResponse::get($slots),
             200,
             [],

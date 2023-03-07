@@ -7,6 +7,7 @@ use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\StoreNotFoundApiException;
 use App\Service\CommandService;
+use App\Service\SlotService;
 use App\Service\StoreService;
 use App\Service\UserService;
 use App\Utils\ApiResponse;
@@ -66,7 +67,7 @@ class StoreController extends AbstractController
         );
     }
 
-    #[Route('/{storeId}/commands', name: 'app_store_items_buy', methods: ['POST'], format: 'application/json')]
+    #[Route('/{storeId}/commands', name: 'app_store_commands', methods: ['POST'], format: 'application/json')]
     public function buy(
         int       $storeId,
         StoreService $storeService,
@@ -100,6 +101,28 @@ class StoreController extends AbstractController
             200,
             [],
             ['groups' => ['command', 'command:products', 'product']]
+        );
+    }
+
+    #[Route('/{storeId}/slots', name: 'app_store_slots', methods: ['POST'], format: 'application/json')]
+    public function slots(
+        int       $storeId,
+        StoreService $storeService,
+        SlotService $slotService,
+        Request $request
+    ): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $store = $storeService->get($storeId);
+        if (is_null($store)) throw new StoreNotFoundApiException();
+
+        $slots = $slotService->availableList($store);
+        return $this->json(ApiResponse::get($slots),
+            200,
+            [],
+            ['groups' => ['slot:available']]
         );
     }
 

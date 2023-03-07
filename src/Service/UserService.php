@@ -93,4 +93,12 @@ class UserService
         ];
     }
 
+    /**
+     * @param int $id
+     * @return User|null
+     */
+    public function get(int $id): User|null
+    {
+        return $this->userRepository->findOneBy(['id' => $id]);
+    }
 }

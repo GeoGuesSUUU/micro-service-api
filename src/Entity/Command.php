@@ -33,6 +33,10 @@ class Command
     #[Groups(groups: ['command'])]
     private ?User $user = null;
 
+    #[ORM\Column]
+    #[Groups(groups: ['command'])]
+    private bool $isValid = false;
+
     #[ORM\OneToMany(mappedBy: 'command', targetEntity: CommandProduct::class, cascade: ['persist'])]
     #[Groups(groups: ['command:products'])]
     private Collection $commandProducts;
@@ -81,6 +85,22 @@ class Command
         $this->user = $user;
 
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isValid(): bool
+    {
+        return $this->isValid;
+    }
+
+    /**
+     * @param bool $isValid
+     */
+    public function setIsValid(bool $isValid): void
+    {
+        $this->isValid = $isValid;
     }
 
     /**

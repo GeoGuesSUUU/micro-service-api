@@ -64,4 +64,11 @@ class CommandService
         $this->commandRepository->save($command, $flush);
         return $command;
     }
+
+    public function validCommand(Command $command, bool $flush = false): Command {
+        $command->setIsValid(true);
+        $this->commandRepository->save($command, $flush);
+
+        return $command;
+    }
 }

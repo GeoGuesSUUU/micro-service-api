@@ -2,8 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\Command;
+use App\Entity\CommandProduct;
 use App\Entity\Product;
 use App\Entity\Store;
+use App\Entity\StoreProduct;
 use App\Repository\StoreProductRepository;
 use App\Repository\StoreRepository;
 
@@ -53,5 +56,43 @@ class StoreService
         $res = $this->storeProductRepository->findOneBy(['store' => $storeId, 'product' => $productId]);
         if (is_null($res)) return null;
         return $res->getProduct();
+    }
+
+    /**
+     * @param int $storeId
+     * @param int[] $productIds
+     * @return StoreProduct|null
+     */
+    public function getStoreProduct(int $storeId, array $productIds): array|null
+    {
+        $res = $this->storeProductRepository->findBy(['store' => $storeId, 'product' => $productIds]);
+        if (is_null($res)) return null;
+        return $res;
+    }
+
+    /**
+     * @param Store $store
+     * @param Command $command
+     * @param int[] $ids
+     * @return Command
+     */
+    public function buyItems(Store $store, Command $command, array $ids): Command {
+        $items = $this->storeProductRepository->findBy(['product' => $ids, 'store' => $store->getId()]);
+        foreach ($items as $item) {
+            $exist = $command->getCommandProducts()->findFirst(
+                fn($i) => $i->getProduct()->getId() === $item->getProduct()->getId()
+            );
+            if (
+                is_null($exist)
+            ) {
+                $exist = new CommandProduct();
+                $exist->setProduct($item->getProduct());
+                $exist->setPrice($item->getPrice());
+                $exist->setQuantity(0);
+            }
+            $exist->setQuantity($exist->getQuantity() + 1);
+            $command->addCommandProduct($exist);
+        }
+        return $command;
     }
 }

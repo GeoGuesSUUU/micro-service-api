@@ -3,12 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\StoreNotFoundApiException;
+use App\Service\CommandService;
 use App\Service\StoreService;
 use App\Service\UserService;
 use App\Utils\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -62,4 +65,65 @@ class StoreController extends AbstractController
             ['groups' => ['product']]
         );
     }
+
+    #[Route('/{storeId}/commands', name: 'app_store_items_buy', methods: ['POST'], format: 'application/json')]
+    public function buy(
+        int       $storeId,
+        StoreService $storeService,
+        CommandService $commandService,
+        Request $request
+    ): Response
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $productIds = $request->query->get('products');
+        if (is_null($productIds)) throw new ProductNotFoundApiException();
+        $productIds = explode(",", $productIds);
+        $productIds = array_map(fn($i) => intval($i), $productIds);
+
+        $commandId = $request->query->get('command');
+
+        $store = $storeService->get($storeId);
+        if (is_null($store)) throw new StoreNotFoundApiException();
+
+        if (is_null($commandId)) {
+            $command = $commandService->create($store, $user);
+        } else {
+            $command = $commandService->get($commandId);
+        }
+
+
+        $storeProducts = $storeService->getStoreProduct($store->getId(), $productIds);
+        $command = $commandService->addProductFromStoreProducts($command, $storeProducts);
+        $command = $commandService->saveCommand($command, true);
+        return $this->json(ApiResponse::get($command),
+            200,
+            [],
+            ['groups' => ['command', 'command:products', 'product']]
+        );
+    }
+
+//    #[Route('/{storeId}/products/buy', name: 'app_store_items_buy', methods: ['GET'], format: 'application/json')]
+//    public function buy(
+//        int       $storeId,
+//        StoreService $storeService,
+//        Request $request
+//    ): Response
+//    {
+//        /** @var User $user */
+//        $user = $this->getUser();
+//
+//        $products = $request->query->get('product');
+//        // TODO : finish this optional function
+//
+//        $store = $storeService->get($storeId);
+//        if (is_null($store)) throw new StoreNotFoundApiException();
+//
+//        $command = $storeService->buyItems($store);
+//        return $this->json(ApiResponse::get($command),
+//            200,
+//            [],
+//            ['groups' => ['product']]
+//        );
+//    }
 }

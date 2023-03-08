@@ -67,7 +67,7 @@ class SellerController extends AbstractController
         if (is_null($content['message'] ?? null)) throw new BadRequestApiException();
         if (is_null($user ?? null) && is_null($content['author'] ?? null)) throw new SendMessageFieldRequiredApiException();
 
-        $message = is_null($content['author'] ?? null) ? $content['message'] : $content['author'] . ' : ' . $content['message'] ;
+        $message = is_null($user ?? null) && is_null($content['author'] ?? null) ? $content['message'] : $content['author'] . ' : ' . $content['message'] ;
 
         $messageService->send($user, $seller, $message, true);
         return $this->json(ApiResponse::get(null, 204),

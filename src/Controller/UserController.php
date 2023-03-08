@@ -94,7 +94,7 @@ class UserController extends AbstractController
      * @return Response
      * @throws TransportExceptionInterface
      */
-    #[Route('/api/users/{userId}/commands/{commandId}', name: 'app_user_valid_command', methods: ['POST'], format: 'application/json')]
+    #[Route('/api/users/{userId}/commands/{commandId}/validate', name: 'app_user_valid_command', methods: ['POST'], format: 'application/json')]
     public function validCommand(
         int $userId,
         int $commandId,

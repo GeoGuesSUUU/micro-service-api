@@ -73,12 +73,12 @@ class SlotService
      * @param Slot $slot
      * @param User $user
      * @param bool $flush
-     * @return Slot|null
+     * @return SlotAvailableDTO|null
      */
-    public function bookSlot(Slot $slot, User $user, bool $flush = false): Slot | null {
+    public function bookSlot(Slot $slot, User $user, bool $flush = false): SlotAvailableDTO | null {
         if (!is_null($slot->getUser() ?? null)) return null;
         $slot->setUser($user);
         $this->slotRepository->save($slot, $flush);
-        return $slot;
+        return $this->slotToSlotAvailable($slot);
     }
 }

@@ -10,6 +10,7 @@ use App\Entity\StoreCommandInput;
 use App\Entity\SlotAvailableDTO;
 use App\Exception\BadRequestApiException;
 use App\Exception\CommandNotFoundApiException;
+use App\Exception\InvalidDataApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\SlotAlreadyBookedApiException;
 use App\Exception\SlotNotFoundApiException;
@@ -27,6 +28,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 use OpenApi\Attributes as OAA;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[OAA\Tag(name: 'Store (Products, Commands & Slots)')]
 #[Security(name: 'Bearer')]
@@ -57,6 +59,8 @@ class StoreController extends AbstractController
         Request $request
     ): Response
     {
+        if (!preg_match('/\d+/i', $zip)) throw new InvalidDataApiException();
+
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 20);
 
@@ -177,6 +181,8 @@ class StoreController extends AbstractController
 
         $quantity = $content['quantity'];
         $price = $content['price'];
+
+        if ($quantity < 0 || $price < 0) throw new InvalidDataApiException();
 
         $storeService->addProductInStore($store, $product, $quantity, $price);
 

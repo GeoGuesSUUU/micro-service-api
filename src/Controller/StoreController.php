@@ -222,7 +222,7 @@ class StoreController extends AbstractController
     }
 
     /**
-     * Command Products from select Store Products
+     * Command Products from select Store Products (Only Client)
      * @OA\RequestBody(@Model(type=StoreCommandInput::class, groups={"store:command:input"}))
      * @OA\Response(
      *     response=200,

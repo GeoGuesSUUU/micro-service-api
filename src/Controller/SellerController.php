@@ -7,6 +7,7 @@ use App\Entity\MessageInput;
 use App\Entity\User;
 use App\Exception\BadRequestApiException;
 use App\Exception\MessageNotFoundApiException;
+use App\Exception\SendMessageFieldRequiredApiException;
 use App\Exception\UserNotFoundApiException;
 use App\Exception\UserNotSellerApiException;
 use App\Service\MessageService;
@@ -60,12 +61,15 @@ class SellerController extends AbstractController
 
         $seller = $userService->getById($sellerId);
         if (is_null($seller ?? null)) throw new UserNotFoundApiException();
-        if ($userService->isSeller($user)) throw new UserNotSellerApiException();
+        if ($userService->isSeller($seller)) throw new UserNotSellerApiException();
 
         $content = json_decode($request->getContent(), true);
         if (is_null($content['message'] ?? null)) throw new BadRequestApiException();
+        if (is_null($user ?? null) && is_null($content['author'] ?? null)) throw new SendMessageFieldRequiredApiException();
 
-        $messageService->send($user, $seller, $content['message'], true);
+        $message = is_null($content['author'] ?? null) ? $content['message'] : $content['author'] . ' : ' . $content['message'] ;
+
+        $messageService->send($user, $seller, $message, true);
         return $this->json(ApiResponse::get(null, 204),
             204,
             [],

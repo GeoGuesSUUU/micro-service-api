@@ -42,7 +42,7 @@ class MessageService
         return $this->messageRepository->findOneBy(['id' => $id, 'seller' => $user->getId()]);
     }
 
-    public function send(User $srcUser, User $destUser, string $content, bool $flush = false): Message {
+    public function send(?User $srcUser, User $destUser, string $content, bool $flush = false): Message {
         $message = new Message();
         $message->setSendDate(new \DateTime());
         $message->setUser($srcUser);

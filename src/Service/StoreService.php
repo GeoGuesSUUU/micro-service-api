@@ -58,6 +58,7 @@ class StoreService
     }
 
     /**
+     * Return Product from store, null if not exist or quantity equal zero
      * @param int $storeId
      * @param int $productId
      * @return Product|null
@@ -65,7 +66,7 @@ class StoreService
     public function getProduct(int $storeId, int $productId): Product|null
     {
         $res = $this->storeProductRepository->findOneBy(['store' => $storeId, 'product' => $productId]);
-        if (is_null($res)) return null;
+        if (is_null($res) || $res->getQuantity() <= 0) return null;
         return $res->getProduct();
     }
 

@@ -7,6 +7,7 @@ use App\Entity\Store;
 use App\Entity\Product;
 use App\Entity\Command;
 use App\Entity\StoreProduct;
+use App\Entity\SlotBookingInput;
 use App\Entity\StoreCommandInput;
 use App\Entity\SlotAvailableDTO;
 use App\Exception\BadRequestApiException;
@@ -365,6 +366,7 @@ class StoreController extends AbstractController
 
     /**
      * Book a Slot form Store (Only Client)
+     * @OA\RequestBody(@Model(type=SlotBookingInput::class, groups={"slot:booking:input"}))
      * @OA\Response(
      *     response=200,
      *     description="Return all slots from store",
@@ -391,11 +393,17 @@ class StoreController extends AbstractController
         int       $slotId,
         StoreService $storeService,
         SlotService $slotService,
+        CommandService $commandService,
         Request $request
     ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
+
+        $content = json_decode($request->getContent(), true);
+        if (is_null($content['command'] ?? null)) throw new CommandNotFoundApiException();
+        $command = $commandService->get($content['command']);
+        if (is_null($command ?? null)) throw new CommandNotFoundApiException();
 
         $store = $storeService->get($storeId);
         if (is_null($store ?? null)) throw new StoreNotFoundApiException();
@@ -403,7 +411,7 @@ class StoreController extends AbstractController
         $slot = $slotService->getByIdAndStore($slotId, $store);
         if (is_null($slot ?? null)) throw new SlotNotFoundApiException();
 
-        $slots = $slotService->bookSlot($slot, $user, true);
+        $slots = $slotService->bookSlot($slot, $user, $command, true);
         if (is_null($slots ?? null)) throw new SlotAlreadyBookedApiException();
         return $this->json(ApiResponse::get($slots),
             200,

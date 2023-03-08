@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Command;
 use App\Entity\Slot;
 use App\Entity\SlotAvailableDTO;
 use App\Entity\Store;
@@ -75,8 +76,9 @@ class SlotService
      * @param bool $flush
      * @return SlotAvailableDTO|null
      */
-    public function bookSlot(Slot $slot, User $user, bool $flush = false): SlotAvailableDTO | null {
+    public function bookSlot(Slot $slot, User $user, Command $command, bool $flush = false): SlotAvailableDTO | null {
         if (!is_null($slot->getUser() ?? null)) return null;
+        $slot->setCommand($command);
         $slot->setUser($user);
         $this->slotRepository->save($slot, $flush);
         return $this->slotToSlotAvailable($slot);

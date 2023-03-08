@@ -21,7 +21,7 @@ class Command
     #[Groups(groups: ['command'])]
     private ?int $id = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'command', cascade: ['persist', 'remove'])]
     #[Groups(groups: ['command'])]
     private ?Slot $slot = null;
 

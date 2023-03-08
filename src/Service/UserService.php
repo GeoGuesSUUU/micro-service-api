@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\AuthDTO;
 use App\Entity\User;
 use App\Exception\UserAlreadyExistApiException;
 use App\Exception\UserNotFoundApiException;
@@ -22,7 +23,7 @@ class UserService
     {
     }
 
-    public function auth(User $body): array
+    public function auth(User $body): AuthDTO
     {
         if (
             is_null($body->getEmail()) ||
@@ -37,10 +38,10 @@ class UserService
         if (!$isValid) throw new UserNotValidApiException();
 
         $token = $this->jwtManager->create($user);
-        return [
-            'user' => $user,
-            'token' => $token
-        ];
+        $auth = new AuthDTO();
+        $auth->setUser($user);
+        $auth->setToken($token);
+        return $auth;
     }
 
     public function register(User $data): array

@@ -47,6 +47,17 @@ class StoreService
     }
 
     /**
+     * @param string $zip
+     * @param int $page
+     * @param int $limit
+     * @return Store[]
+     */
+    public function getAllByZipPagination(string $zip, int $page, int $limit): array
+    {
+        return $this->storeRepository->findAllByZipWithPagination($zip, $page, $limit);
+    }
+
+    /**
      * @param int $storeId
      * @param int $productId
      * @return Product|null

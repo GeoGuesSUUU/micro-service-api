@@ -2,32 +2,51 @@
 
 namespace App\Controller;
 
+use App\Entity\Message;
+use App\Entity\MessageInput;
 use App\Entity\User;
 use App\Exception\BadRequestApiException;
 use App\Exception\MessageNotFoundApiException;
-use App\Exception\ProductNotFoundApiException;
-use App\Exception\SlotAlreadyBookedApiException;
-use App\Exception\SlotNotFoundApiException;
-use App\Exception\StoreNotFoundApiException;
 use App\Exception\UserNotFoundApiException;
 use App\Exception\UserNotSellerApiException;
-use App\Service\CommandService;
 use App\Service\MessageService;
-use App\Service\ProductService;
-use App\Service\SlotService;
-use App\Service\StoreService;
 use App\Service\UserService;
 use App\Utils\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\SerializerInterface;
+use Nelmio\ApiDocBundle\Annotation\Model;
+use Nelmio\ApiDocBundle\Annotation\Security;
+use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OAA;
 
+#[OAA\Tag(name: 'Seller')]
+#[Security(name: 'Bearer')]
 #[Route('/api/sellers')]
 class SellerController extends AbstractController
 {
+    /**
+     * Send Message to a Seller
+     * @OA\RequestBody(@Model(type=MessageInput::class, groups={"message:input"}))
+     * @OA\Response(
+     *     response=204,
+     *     description="Send Message to a selected seller"
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="User is not a seller"
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="User not found"
+     * )
+     * @param int $sellerId
+     * @param UserService $userService
+     * @param MessageService $messageService
+     * @param Request $request
+     * @return Response
+     */
     #[Route('/{sellerId}/messages/send', name: 'app_seller_message_send', methods: ['POST'], format: 'application/json')]
     public function send(
         int $sellerId,
@@ -47,24 +66,45 @@ class SellerController extends AbstractController
         if (is_null($content['message'] ?? null)) throw new BadRequestApiException();
 
         $messageService->send($user, $seller, $content['message'], true);
-        return $this->json(ApiResponse::get(''),
-            200,
+        return $this->json(ApiResponse::get(null, 204),
+            204,
             [],
             ['groups' => []]
         );
     }
 
+    /**
+     * Get all Messages (Only Seller)
+     * @OA\Parameter(name="page", in="query")
+     * @OA\Parameter(name="limit", in="query")
+     * @OA\Response(
+     *     response=200,
+     *     description="Return all your messages if you're seller",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Message::class, groups={"message", "user"}))
+     *     )
+     * )
+     * @param UserService $userService
+     * @param MessageService $messageService
+     * @param Request $request
+     * @return Response
+     */
     #[Route('/messages', name: 'app_seller_message_all', methods: ['GET'], format: 'application/json')]
     public function seeAll(
         UserService $userService,
-        MessageService $messageService
+        MessageService $messageService,
+        Request $request
     ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
         if ($userService->isSeller($user)) throw new UserNotSellerApiException();
 
-        $messages = $messageService->getAllByDestUser($user);
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 20);
+
+        $messages = $messageService->getAllByDestUserPagination($user, $page, $limit);
 
         return $this->json(ApiResponse::get($messages),
             200,
@@ -73,6 +113,26 @@ class SellerController extends AbstractController
         );
     }
 
+    /**
+     * Get Message By ID (Only Seller)
+     * @OA\Response(
+     *     response=200,
+     *     description="Return one of your messages by ID if you're seller",
+     *     @Model(type=Message::class, groups={"message", "user"})
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="User is not a seller"
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="Message not found"
+     * )
+     * @param int $messageId
+     * @param UserService $userService
+     * @param MessageService $messageService
+     * @return Response
+     */
     #[Route('/messages/{messageId}', name: 'app_seller_message_one', methods: ['GET'], format: 'application/json')]
     public function seeOne(
         int $messageId,

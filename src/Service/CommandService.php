@@ -9,6 +9,7 @@ use App\Entity\StoreProduct;
 use App\Entity\User;
 use App\Repository\CommandProductRepository;
 use App\Repository\CommandRepository;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
@@ -31,7 +32,7 @@ class CommandService
         return $command;
     }
 
-    public function get(int $id): Command {
+    public function get(int $id): Command | null {
         return $this->commandRepository->findOneBy(['id' => $id]);
     }
 
@@ -68,6 +69,9 @@ class CommandService
         return $command;
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     public function validCommand(Command $command, User $user, bool $flush = false): Command {
         $command->setIsValid(true);
         $this->commandRepository->save($command, $flush);

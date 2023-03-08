@@ -52,21 +52,21 @@ security:
         - { path: ^/api/doc.json$, methods: ['GET'], roles: PUBLIC_ACCESS }
         # NO AUTH (PUBLIC ACCESS)
         - { path: ^/api.platform/users$, methods: ['POST'], roles: PUBLIC_ACCESS }
-        - { path: '^/api/stores/nearest/{zip}$', methods: ['GET'], roles: PUBLIC_ACCESS }
-        - { path: '^/api/stores/{id}/products$', methods: ['GET'], roles: PUBLIC_ACCESS }
-        - { path: '^/api/stores/{storeId}/products/{productId}$', methods: ['GET'], roles: PUBLIC_ACCESS }
-        - { path: '^/api/sellers/{sellerId}/messages/send$', methods: ['POST'], roles: PUBLIC_ACCESS }
+        - { path: ^/api/stores/nearest/\d+$, methods: ['GET'], roles: PUBLIC_ACCESS }
+        - { path: ^/api/stores/\d+/products$, methods: ['GET'], roles: PUBLIC_ACCESS }
+        - { path: ^/api/stores/\d+/products/\d+$', methods: ['GET'], roles: PUBLIC_ACCESS }
+        - { path: ^/api/sellers/\d+/messages/send$, methods: ['POST'], roles: PUBLIC_ACCESS }
         # CLIENT (ROLE_USER)
-        - { path: '^/api/stores/{storeId}/commands', methods: [ 'POST' ], roles: ROLE_USER }
-        - { path: '^/api/stores/{storeId}/slots$', methods: [ 'GET' ], roles: ROLE_USER }
-        - { path: '^/api/stores/{storeId}/slots/{slotId}/booking', methods: [ 'POST' ], roles: ROLE_USER }
+        - { path: ^/api/stores/\d+/commands, methods: [ 'POST' ], roles: ROLE_USER }
+        - { path: ^/api/stores/\d+/slots, methods: [ 'GET' ], roles: ROLE_USER }
+        - { path: ^/api/stores/\d+/slots/\d+/booking, methods: [ 'POST' ], roles: ROLE_USER }
         # SELLER (ROLE_SELLER)
         - { path: ^/api/sellers/messages$, methods: [ 'GET' ], roles: ROLE_SELLER }
-        - { path: '^/api/sellers/messages/{messageId}$', methods: [ 'GET' ], roles: ROLE_SELLER }
+        - { path: ^/api/sellers/messages/\d+$, methods: [ 'GET' ], roles: ROLE_SELLER }
         # ADMIN (ROLE_ADMIN)
         - { path: ^/api.platform, roles: ROLE_ADMIN }
-        - { path: '^/api/stores/{storeId}/products/{productId}$', methods: ['POST', 'DELETE'], roles: ROLE_ADMIN }
-        - { path: '^/api/users/{userId}/commands/{commandId}$', methods: ['POST'], roles: ROLE_ADMIN }
+        - { path: ^/api/stores/\d+/products/\d+$, methods: ['POST', 'DELETE'], roles: ROLE_ADMIN }
+        - { path: ^/api/users/\d+/commands/\d+$, methods: ['POST'], roles: ROLE_ADMIN }
 
     role_hierarchy:
         ROLE_SELLER: ROLE_USER

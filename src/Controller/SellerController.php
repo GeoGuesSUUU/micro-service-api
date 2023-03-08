@@ -110,7 +110,12 @@ class SellerController extends AbstractController
 
         $messages = $messageService->getAllByDestUserPagination($user, $page, $limit);
 
-        return $this->json(ApiResponse::get($messages),
+        return $this->json(ApiResponse::get($messages, 200, [
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+            ]
+        ]),
             200,
             [],
             ['groups' => ['message', 'user']]

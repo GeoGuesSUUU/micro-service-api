@@ -60,7 +60,12 @@ class StoreController extends AbstractController
         $limit = $request->get('limit', 20);
 
         $stores = $storeService->getAllByZipPagination($zip, $page, $limit);
-        return $this->json(ApiResponse::get($stores),
+        return $this->json(ApiResponse::get($stores, 200, [
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+            ]
+        ]),
             200,
             [],
             ['groups' => ['store']]
@@ -310,7 +315,12 @@ class StoreController extends AbstractController
         $limit = $request->get('limit', 20);
 
         $slots = $slotService->availableListPagination($store, $page, $limit);
-        return $this->json(ApiResponse::get($slots),
+        return $this->json(ApiResponse::get($slots, 200, [
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+            ]
+        ]),
             200,
             [],
             ['groups' => ['slot:available']]

@@ -23,7 +23,7 @@ class Slot
     #[ORM\ManyToOne(inversedBy: 'slots')]
     private ?Store $store = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'slots')]
     private ?User $user = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

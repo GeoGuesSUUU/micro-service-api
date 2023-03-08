@@ -7,6 +7,7 @@ use App\Entity\CommandProduct;
 use App\Entity\Product;
 use App\Entity\Store;
 use App\Entity\StoreProduct;
+use App\Repository\ProductRepository;
 use App\Repository\StoreProductRepository;
 use App\Repository\StoreRepository;
 
@@ -15,7 +16,8 @@ class StoreService
 
     public function __construct(
         private readonly StoreRepository $storeRepository,
-        private readonly StoreProductRepository $storeProductRepository
+        private readonly StoreProductRepository $storeProductRepository,
+        private readonly ProductRepository $productRepository
     )
     {
     }
@@ -68,6 +70,17 @@ class StoreService
         $res = $this->storeProductRepository->findOneBy(['store' => $storeId, 'product' => $productId]);
         if (is_null($res) || $res->getQuantity() <= 0) return null;
         return $res->getProduct();
+    }
+
+    /**
+     * @param int $storeId
+     * @param int $page
+     * @param int $limit
+     * @return Product[]
+     */
+    public function getProductsByStorePagination(int $storeId, int $page, int $limit): array
+    {
+        return $this->productRepository->findAllByStoreWithPagination($storeId, $page, $limit);
     }
 
     public function addProductInStore(Store $store, Product $product, int $quantity = 0, int $price = 0): Store | null
@@ -133,5 +146,20 @@ class StoreService
             $command->addCommandProduct($exist);
         }
         return $command;
+    }
+
+    /**
+     * @param mixed $page
+     * @param mixed $limit
+     * @return Store[]
+     */
+    public function getAllPagination(int $page, int $limit): array
+    {
+        return $this->storeRepository->findAllWithPagination($page, $limit);
+    }
+
+    public function getStoreProductsByStorePagination(int $id, mixed $page, mixed $limit)
+    {
+        return $this->storeProductRepository->findAllByStoreWithPagination($id, $page, $limit);
     }
 }

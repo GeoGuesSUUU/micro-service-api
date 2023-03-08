@@ -47,4 +47,12 @@ class StoreRepository extends ServiceEntityRepository
             ->setMaxResults($limit);
         return $qb->getQuery()->getResult();
     }
+
+    public function findAllWithPagination(mixed $page, mixed $limit)
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+        return $qb->getQuery()->getResult();
+    }
 }

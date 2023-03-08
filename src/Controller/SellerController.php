@@ -48,7 +48,7 @@ class SellerController extends AbstractController
      * @param Request $request
      * @return Response
      */
-    #[Route('/{sellerId}/messages/send', name: 'app_seller_message_send', methods: ['POST'], format: 'application/json')]
+    #[Route('/{sellerId}/messages', name: 'app_seller_message_send', methods: ['POST'], format: 'application/json')]
     public function send(
         int $sellerId,
         UserService $userService,

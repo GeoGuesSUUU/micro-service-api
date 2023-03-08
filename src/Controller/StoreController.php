@@ -9,6 +9,7 @@ use App\Entity\Command;
 use App\Entity\StoreCommandInput;
 use App\Entity\SlotAvailableDTO;
 use App\Exception\BadRequestApiException;
+use App\Exception\CommandNotFoundApiException;
 use App\Exception\ProductNotFoundApiException;
 use App\Exception\SlotAlreadyBookedApiException;
 use App\Exception\SlotNotFoundApiException;
@@ -269,10 +270,10 @@ class StoreController extends AbstractController
 
         $content = json_decode($request->getContent(), true);
 
-        $productIds = $content['products'];
+        $productIds = $content['products'] ?? null;
         if (is_null($productIds)) throw new ProductNotFoundApiException();
 
-        $commandId = $content['command'];
+        $commandId = $content['command'] ?? null;
 
         $store = $storeService->get($storeId);
         if (is_null($store)) throw new StoreNotFoundApiException();
@@ -281,6 +282,7 @@ class StoreController extends AbstractController
             $command = $commandService->create($store, $user);
         } else {
             $command = $commandService->get($commandId);
+            if (is_null($command ?? null)) throw new CommandNotFoundApiException();
         }
 
 

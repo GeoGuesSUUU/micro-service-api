@@ -37,8 +37,13 @@ class ApiResponse
                 $response['@actions']['@next'] = explode('?', $_SERVER["REQUEST_URI"])[0] . '?page=' . $options['pagination']['page'] + 1;
             }
             if (isset($options['actions'])) {
-                //TODO: actions
-                $response['@actions'] = $options['actions'];
+                $response['@actions'] = array_map(fn($e) => explode('?', $_SERVER["REQUEST_URI"])[0] . $e , $options['actions']);
+            }
+            if (isset($options['items-actions']) && is_array($value)) {
+                $response['response'] = array_map(fn($i) => [
+                    'item' => $i,
+                    '@actions' => array_map(fn($e) => explode('?', $_SERVER["REQUEST_URI"])[0] . (is_null($i->getId() ?? null) ? '' : '/' . $i->getId() ) . $e , $options['items-actions'])
+                ], $response['response']);
             }
         }
         return $response;

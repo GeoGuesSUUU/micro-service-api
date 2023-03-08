@@ -179,7 +179,13 @@ class StoreController extends AbstractController
 
         $storeService->addProductInStore($store, $product, $quantity, $price);
 
-        return $this->json(ApiResponse::get($store),
+        return $this->json(ApiResponse::get($store, 200, [
+            'actions' => [
+                '@add' => '',
+                '@remove' => '',
+                '@see' => ''
+            ]
+        ]),
             200,
             [],
             ['groups' => ['store', 'store:products', 'product']]
@@ -219,7 +225,13 @@ class StoreController extends AbstractController
 
         $storeService->removeProductInStore($store, $product);
 
-        return $this->json(ApiResponse::get($store),
+        return $this->json(ApiResponse::get($store, 200, [
+            'actions' => [
+                '@add' => '',
+                '@remove' => '',
+                '@see' => ''
+            ]
+        ]),
             200,
             [],
             ['groups' => ['store', 'store:products', 'product']]
@@ -316,6 +328,9 @@ class StoreController extends AbstractController
 
         $slots = $slotService->availableListPagination($store, $page, $limit);
         return $this->json(ApiResponse::get($slots, 200, [
+            'items-actions' => [
+                '@booking' => '/booking'
+            ],
             'pagination' => [
                 'page' => $page,
                 'limit' => $limit,

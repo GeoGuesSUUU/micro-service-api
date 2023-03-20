@@ -30,7 +30,6 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 use OpenApi\Attributes as OAA;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[OAA\Tag(name: 'Store (Products, Commands & Slots)')]
 #[Security(name: 'Bearer')]

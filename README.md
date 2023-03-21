@@ -11,7 +11,7 @@
     ```shell
     git clone https://github.com/GeoGuesSUUU/micro-service-api.git
     ```
-   _Pour toutes les commandes suivantes placer vous au niveau du repertoire project `/micro-service-api`_
+   _Pour toutes les commandes suivantes placer vous au niveau du répertoire projet `/micro-service-api`_
 2. Installer les dépendances
     ```shell
     composer install
@@ -33,34 +33,34 @@
              JWT_PASSPHRASE=SECRET
              ```
       - **MAILER_DSN** : Le DSN du Mailer Google ([si vous n'avez pas identifiant mailer Google](#comment-créer-un-mailer-google))
-          - Remplacer `MAIL_ADDRESS` par l’addresse mail du compte
+          - Remplacer `MAIL_ADDRESS` par l’adresse mail du compte
           - Remplacer `PASSWORD` par le mot de pass d’application
              ```
              MAILER_DSN=gmail://MAIL_ADDRESS:PASSWORD@default
              ```
-4. Générer les clé privée et publique
+4. Générer les clés privée et publique
 Pour cette partie vous aurez besoin d'un terminal GitBash ou basé Linux.
-   - En premier, générer la clé privé, executer la commande suivante et entrer votre passphrase précédement utilisé pour la varible d'environnement 
+   - En premier, générer la clé privée, exécuter la commande suivante et entrer votre passphrase précédement utilisé pour la varible d'environnement 
     ```shell
     openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkeyopt rsa_keygen_bits:4096
     ```
-   - Et ensuite, générer la clé publique, executer la commande suivante et entrer une nouvelle fois votre passphrase
+   - Et ensuite, générer la clé publique, exécuter la commande suivante et entrer une nouvelle fois votre passphrase
     ```shell
     openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout
     ```
    ![](docs/openssl.png)
 
-    _*Si vous n'avez pas le message "Entrer PEM pass phrase:", essayer d\'executer la commande depuis un IDE toujours avec le terminal Gitbash._
+    _*Si vous n'avez pas le message "Entrer PEM pass phrase:", essayer d\'exécuter la commande depuis un IDE toujours avec le terminal Gitbash._
 5. Base de données, Migrations et Fixtures
    - Créer votre base de données :
       ```shell
       php bin/console doctrine:database:create
       ```
-   - Executer les migrations :
+   - Exécuter les migrations :
      ```shell
      php bin/console doctrine:migration:migrate
      ```
-   - Si vous voulez initialiser votre base de données avec quelques données, executer les fixtures :
+   - Si vous voulez initialiser votre base de données avec quelques données, exécuter les fixtures :
      ```shell
      php bin/console doctrine:fixtures:load
      ```
@@ -74,7 +74,7 @@ Pour cette partie vous aurez besoin d'un terminal GitBash ou basé Linux.
 ## Utilisation
 En allant sur URL http://localhost:8000/ vous serez redirigé sur la page API doc (Swagger Page)
 
-Plusieurs API sont générer par API Platform. Les API écrites correspondent au sections :
+Plusieurs API sont généré par API Platform. Les API écrites correspondent aux sections :
 - Seller
 - Store (Products, Commands & Slots)
 - Auth & User
@@ -103,8 +103,8 @@ Plusieurs API sont générer par API Platform. Les API écrites correspondent au
 - [x] Swagger Page
 - [x] Authentification JWT
 - [ ] Authentification Oauth2
-- [x] Pagination pour les reponses en liste
-- [x] Actions disponibles intégré dans la reponse
+- [x] Pagination pour les réponses en liste
+- [x] Actions disponibles intégrées dans la réponse
 
 ## Aide
 ### Fixtures identifiants
@@ -123,4 +123,4 @@ Plusieurs API sont générer par API Platform. Les API écrites correspondent au
 3. Ajouter un mot de passe d'application
 
     ![](docs/google-mailer.png)
-4. Ensuite pour la variable d'environnment MAILER_DNS, remplacer MAIL_ADDRESS par l'email et PASSWORD par le mot de passe de l'application
+4. Ensuite pour la variable d'environnement MAILER_DNS, remplacer MAIL_ADDRESS par l'email et PASSWORD par le mot de passe de l'application

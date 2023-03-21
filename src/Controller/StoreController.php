@@ -292,7 +292,6 @@ class StoreController extends AbstractController
         $user = $this->getUser();
 
         $content = json_decode($request->getContent(), true);
-
         $productIds = $content['products'] ?? null;
         if (is_null($productIds)) throw new ProductNotFoundApiException();
 
@@ -354,7 +353,7 @@ class StoreController extends AbstractController
         $slots = $slotService->availableListPagination($store, $page, $limit);
         return $this->json(ApiResponse::get($slots, 200, [
             'items-actions' => [
-                '@booking' => '/booking'
+                '@booking' => ''
             ],
             'pagination' => [
                 'page' => $page,
@@ -406,7 +405,10 @@ class StoreController extends AbstractController
         $content = json_decode($request->getContent(), true);
         if (is_null($content['command'] ?? null)) throw new CommandNotFoundApiException();
         $command = $commandService->get($content['command']);
-        if (is_null($command ?? null)) throw new CommandNotFoundApiException();
+        if (
+            is_null($command ?? null) ||
+            $command->getUser()->getId() !== $user->getId()
+        ) throw new CommandNotFoundApiException();
 
         $store = $storeService->get($storeId);
         if (is_null($store ?? null)) throw new StoreNotFoundApiException();
@@ -414,7 +416,7 @@ class StoreController extends AbstractController
         $slot = $slotService->getByIdAndStore($slotId, $store);
         if (is_null($slot ?? null)) throw new SlotNotFoundApiException();
 
-        $slots = $slotService->bookSlot($slot, $user, $command, true);
+        $slots = $slotService->bookSlot($slot, $command, true);
         if (is_null($slots ?? null)) throw new SlotAlreadyBookedApiException();
         return $this->json(ApiResponse::get($slots),
             200,

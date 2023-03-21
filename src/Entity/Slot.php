@@ -23,10 +23,7 @@ class Slot
     #[ORM\ManyToOne(inversedBy: 'slots')]
     private ?Store $store = null;
 
-    #[ORM\ManyToOne(inversedBy: 'slots')]
-    private ?User $user = null;
-
-    #[ORM\OneToOne(inversedBy: 'slots')]
+    #[ORM\OneToOne(inversedBy: 'slot')]
     private ?Command $command = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -50,18 +47,6 @@ class Slot
     public function setStore(?Store $store): self
     {
         $this->store = $store;
-
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
 
         return $this;
     }

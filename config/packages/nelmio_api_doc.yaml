@@ -45,13 +45,14 @@ nelmio_api_doc:
                             type: string
                             example: B€2t_Pa$$w0rD-8000
             securitySchemes:
-                bearerAuth:
+                Bearer:
                     type: apiKey
-                    in: header
+                    description: 'Authorization: Bearer {jwt_token}'
                     name: Authorization
+                    in: header
 
         security:
-            -   bearerAuth: [ ]
+            -   Bearer: [ ]
     areas: # to filter documented areas
         path_patterns:
             - ^(?!/api.platform)

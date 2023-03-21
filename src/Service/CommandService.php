@@ -72,7 +72,8 @@ class CommandService
     /**
      * @throws TransportExceptionInterface
      */
-    public function validCommand(Command $command, User $user, bool $flush = false): Command {
+    public function validCommand(Command $command, User $user, bool $flush = false): Command | null {
+        if (is_null($command->getSlot())) return null;
         $command->setIsValid(true);
         $this->commandRepository->save($command, $flush);
 

@@ -72,14 +72,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Command::class)]
     private Collection $commands;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Slot::class)]
-    private Collection $slots;
-
     public function __construct()
     {
         $this->messages = new ArrayCollection();
         $this->commands = new ArrayCollection();
-        $this->slots = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -258,36 +254,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
             // set the owning side to null (unless already changed)
             if ($command->getUser() === $this) {
                 $command->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Slot>
-     */
-    public function getSlots(): Collection
-    {
-        return $this->slots;
-    }
-
-    public function addSlot(Slot $slot): self
-    {
-        if (!$this->slots->contains($slot)) {
-            $this->slots->add($slot);
-            $slot->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSlot(Slot $slot): self
-    {
-        if ($this->slots->removeElement($slot)) {
-            // set the owning side to null (unless already changed)
-            if ($slot->getUser() === $this) {
-                $slot->setUser(null);
             }
         }
 

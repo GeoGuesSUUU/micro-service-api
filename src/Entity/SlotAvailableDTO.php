@@ -17,8 +17,6 @@ class SlotAvailableDTO
 
     private ?Store $store = null;
 
-    private ?User $user = null;
-
     #[Groups(groups: ['slot:available'])]
     private ?bool $available = null;
 
@@ -49,18 +47,6 @@ class SlotAvailableDTO
     public function setStore(?Store $store): self
     {
         $this->store = $store;
-
-        return $this;
-    }
-
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
 
         return $this;
     }

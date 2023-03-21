@@ -64,6 +64,7 @@ Pour cette partie vous aurez besoin d'un terminal GitBash ou basé Linux.
      ```shell
      php bin/console doctrine:fixtures:load
      ```
+     Les identifiants des utilisateurs de fixtures --> [ici](#fixtures-identifiants)
 6. Lancer le projet :
      ```shell
      php -S localhost:8000 -t ./public
@@ -106,6 +107,16 @@ Plusieurs API sont générer par API Platform. Les API écrites correspondent au
 - [x] Actions disponibles intégré dans la reponse
 
 ## Aide
+### Fixtures identifiants
+1. Client
+    - email : client@client.cl
+    - mdp : Client123
+2. Vendeur
+    - email : seller@seller.se
+    - mdp : Seller123
+3. Admin
+    - email : admin@admin.ad
+    - mdp : Admin123
 ### Comment créer un mailer Google
 1. Créer compte Google
 2. Activer double authentification

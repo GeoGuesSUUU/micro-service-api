@@ -8,10 +8,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StoreRepository::class)]
 #[ApiResource(
-    normalizationContext: [ 'groups' => ['store'] ]
+    normalizationContext: ['groups' => ['store']]
 )]
 class Store
 {
@@ -30,8 +31,9 @@ class Store
     private ?string $address = null;
 
     #[ORM\Column]
+    #[Assert\Regex(pattern: '\d+', message: 'ZIP code is invalid')]
     #[Groups(groups: ['store'])]
-    private ?int $zip = null;
+    private ?string $zip = null;
 
     #[ORM\OneToMany(mappedBy: 'store', targetEntity: User::class)]
     #[Groups(groups: ['store:sellers'])]
@@ -84,12 +86,12 @@ class Store
         return $this;
     }
 
-    public function getZip(): ?int
+    public function getZip(): ?string
     {
         return $this->zip;
     }
 
-    public function setZip(int $zip): self
+    public function setZip(string $zip): self
     {
         $this->zip = $zip;
 
@@ -216,3 +218,4 @@ class Store
         return $this;
     }
 }
+

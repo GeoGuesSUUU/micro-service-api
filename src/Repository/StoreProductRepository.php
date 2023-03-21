@@ -39,6 +39,16 @@ class StoreProductRepository extends ServiceEntityRepository
         }
     }
 
+    public function findAllByStoreWithPagination(int $storeId, int $page, int $limit)
+    {
+        $qb = $this->createQueryBuilder('sp')
+            ->andWhere('sp.store = :store')
+            ->setParameter('store', $storeId)
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+        return $qb->getQuery()->getResult();
+    }
+
 //    /**
 //     * @return StoreProduct[] Returns an array of StoreProduct objects
 //     */

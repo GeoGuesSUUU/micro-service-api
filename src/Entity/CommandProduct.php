@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CommandProductRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommandProductRepository::class)]
 class CommandProduct
@@ -24,7 +25,13 @@ class CommandProduct
 
     #[ORM\Column]
     #[Groups(groups: ['command:products'])]
-    private ?int $quantity = null;
+    #[Assert\PositiveOrZero(message: "The quantity can't be negative")]
+    private ?int $quantity = 0;
+
+    #[ORM\Column]
+    #[Groups(groups: ['command:products'])]
+    #[Assert\PositiveOrZero(message: "The price can't be negative")]
+    private ?float $price = null;
 
     public function getId(): ?int
     {
@@ -63,6 +70,18 @@ class CommandProduct
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(float $price): self
+    {
+        $this->price = $price;
 
         return $this;
     }

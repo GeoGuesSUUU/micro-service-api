@@ -26,7 +26,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(),
-        new Post(processor: UserPasswordHasher::class),
+        new Post(processor: UserPasswordHasher::class, denormalizationContext: [ 'groups' => ['user:create'] ]),
         new Get(),
         new Put(processor: UserPasswordHasher::class),
         new Patch(processor: UserPasswordHasher::class),
@@ -43,11 +43,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(groups: ['user'])]
+    #[Groups(groups: ['user', 'user:create'])]
     private string $name;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(groups: ['user', 'user:login'])]
+    #[Groups(groups: ['user', 'user:login', 'user:create'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -60,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     private string $password;
 
     #[Assert\NotBlank(groups: ['user:login'])]
-    #[Groups(['user:login'])]
+    #[Groups(['user:login', 'user:create'])]
     private ?string $plainPassword = null;
 
     #[ORM\ManyToOne(inversedBy: 'sellers')]

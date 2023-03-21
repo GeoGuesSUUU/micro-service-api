@@ -309,7 +309,7 @@ class StoreController extends AbstractController
 
 
         $storeProducts = $storeService->getStoreProduct($store->getId(), $productIds);
-        $command = $commandService->addProductFromStoreProducts($command, $storeProducts);
+        $command = $commandService->addProductFromStoreProducts($command, $storeProducts, $productIds);
         $command = $commandService->saveCommand($command, true);
         return $this->json(ApiResponse::get($command),
             200,

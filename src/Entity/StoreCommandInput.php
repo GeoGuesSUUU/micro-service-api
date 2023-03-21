@@ -7,7 +7,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class StoreCommandInput
 {
     #[Groups('store:command:input')]
-    /** @var int[]|null  */
+    /** @var StoreCommandProductInput[]|null $products */
     private ?array $products;
 
     #[Groups('store:command:input')]

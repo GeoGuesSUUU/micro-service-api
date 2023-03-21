@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Command;
 use App\Entity\CommandProduct;
 use App\Entity\Store;
+use App\Entity\StoreCommandProductInput;
 use App\Entity\StoreProduct;
 use App\Entity\User;
 use App\Repository\CommandProductRepository;
@@ -37,13 +38,40 @@ class CommandService
     }
 
     /**
+     * @param array $products
+     * @param StoreProduct $storeProduct
+     * @return StoreCommandProductInput|null
+     */
+    private function getProductParamByStoreProduct(array $products, StoreProduct $storeProduct): StoreCommandProductInput|null {
+        foreach ( $products as $product ) {
+            if (
+                isset($product['productId']) &&
+                isset($product['quantity']) &&
+                $product['productId'] === $storeProduct->getId()
+            ) {
+                $scp = new StoreCommandProductInput();
+                $scp->setProductId($product['productId']);
+                $scp->setQuantity($product['quantity']);
+                return $scp;
+            }
+        }
+        return null;
+    }
+
+    /**
      * @param Command $command
      * @param StoreProduct[] $storeProducts
+     * @param array $productIds
      * @return Command
      */
-    public function addProductFromStoreProducts(Command $command, array $storeProducts): Command {
+    public function addProductFromStoreProducts(Command $command, array $storeProducts, array $productIds): Command {
         foreach ($storeProducts as $item) {
-            if ($item->getQuantity() <= 0) continue;
+            $prod = $this->getProductParamByStoreProduct($productIds, $item);
+            if (
+                is_null($prod ?? null) ||
+                $item->getQuantity() <= 0 ||
+                $prod->getQuantity() > $item->getQuantity()
+            ) continue;
 
             $exist = $command->getCommandProducts()->filter(
                 fn($i) => $i->getProduct()->getId() === $item->getProduct()->getId()
@@ -57,8 +85,8 @@ class CommandService
                 $exist->setPrice($item->getPrice());
                 $exist->setQuantity(0);
             }
-            $exist->setQuantity($exist->getQuantity() + 1);
-            $item->setQuantity($item->getQuantity() - 1);
+            $exist->setQuantity($exist->getQuantity() + $prod->getQuantity());
+            $item->setQuantity($item->getQuantity() - $prod->getQuantity());
             $command->addCommandProduct($exist);
         }
         return $command;

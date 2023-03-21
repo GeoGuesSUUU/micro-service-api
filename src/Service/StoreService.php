@@ -117,7 +117,7 @@ class StoreService
      */
     public function getStoreProduct(int $storeId, array $productIds): array|null
     {
-        $res = $this->storeProductRepository->findBy(['store' => $storeId, 'product' => $productIds]);
+        $res = $this->storeProductRepository->findBy(['store' => $storeId, 'product' => array_map(fn($p) => $p['productId'], $productIds)]);
         if (is_null($res)) return null;
         return $res;
     }

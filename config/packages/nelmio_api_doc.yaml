@@ -3,7 +3,7 @@ nelmio_api_doc:
     documentation:
         info:
             title: MicroService API Docs
-            description: All MicroService API routes are referenced here!
+            description: All MicroService API routes are referenced here! (All non-API Platform responses contain additional metadata.)
             version: 1.0.0
 
 #        paths:
@@ -45,13 +45,14 @@ nelmio_api_doc:
                             type: string
                             example: B€2t_Pa$$w0rD-8000
             securitySchemes:
-                bearerAuth:
+                Bearer:
                     type: apiKey
-                    in: header
+                    description: 'Authorization: Bearer {jwt_token}'
                     name: Authorization
+                    in: header
 
         security:
-            -   bearerAuth: [ ]
+            -   Bearer: [ ]
     areas: # to filter documented areas
         path_patterns:
             - ^(?!/api.platform)

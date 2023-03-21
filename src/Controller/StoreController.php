@@ -6,6 +6,8 @@ use App\Entity\User;
 use App\Entity\Store;
 use App\Entity\Product;
 use App\Entity\Command;
+use App\Entity\StoreProduct;
+use App\Entity\SlotBookingInput;
 use App\Entity\StoreCommandInput;
 use App\Entity\SlotAvailableDTO;
 use App\Exception\BadRequestApiException;
@@ -28,7 +30,6 @@ use Nelmio\ApiDocBundle\Annotation\Model;
 use Nelmio\ApiDocBundle\Annotation\Security;
 use OpenApi\Annotations as OA;
 use OpenApi\Attributes as OAA;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[OAA\Tag(name: 'Store (Products, Commands & Slots)')]
 #[Security(name: 'Bearer')]
@@ -37,6 +38,7 @@ class StoreController extends AbstractController
 {
     /**
      * Get all Store By ZIP code (Only Seller)
+     * @OA\Parameter(name="zip", in="query")
      * @OA\Parameter(name="page", in="query")
      * @OA\Parameter(name="limit", in="query")
      * @OA\Response(
@@ -47,24 +49,25 @@ class StoreController extends AbstractController
      *        @OA\Items(ref=@Model(type=Store::class, groups={"store"}))
      *     )
      * )
-     * @param string $zip
      * @param StoreService $storeService
      * @param Request $request
      * @return Response
      */
-    #[Route('/nearest/{zip}', name: 'app_store_nearest', methods: ['GET'], format: 'application/json')]
+    #[Route('', name: 'app_store_nearest', methods: ['GET'], format: 'application/json')]
     public function nearest(
-        string       $zip,
         StoreService $storeService,
         Request $request
     ): Response
     {
-        if (!preg_match('/\d+/i', $zip)) throw new InvalidDataApiException();
-
+        $zip = $request->get('zip') ?? null;
         $page = $request->get('page', 1);
         $limit = $request->get('limit', 20);
 
-        $stores = $storeService->getAllByZipPagination($zip, $page, $limit);
+        if (is_null($zip ?? null)) {
+            $stores = $storeService->getAllPagination($page, $limit);
+        } else {
+            $stores = $storeService->getAllByZipPagination($zip, $page, $limit);
+        }
         return $this->json(ApiResponse::get($stores, 200, [
             'pagination' => [
                 'page' => $page,
@@ -82,7 +85,10 @@ class StoreController extends AbstractController
      * @OA\Response(
      *     response=200,
      *     description="Return one store by ID and it products",
-     *     @Model(type=Store::class, groups={"store", "store:products", "product"})
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=StoreProduct::class, groups={"store:products", "product"}))
+     *     )
      * )
      * @OA\Response(
      *     response=404,
@@ -90,20 +96,31 @@ class StoreController extends AbstractController
      * )
      * @param int $id
      * @param StoreService $storeService
+     * @param Request $request
      * @return Response
      */
     #[Route('/{id}/products', name: 'app_store_products', methods: ['GET'], format: 'application/json')]
     public function products(
         int       $id,
-        StoreService $storeService
+        StoreService $storeService,
+        Request $request
     ): Response
     {
+        $page = $request->get('page', 1);
+        $limit = $request->get('limit', 20);
+
         $store = $storeService->get($id);
         if (is_null($store)) throw new StoreNotFoundApiException();
-        return $this->json(ApiResponse::get($store),
+        $products = $storeService->getStoreProductsByStorePagination($id, $page, $limit);
+        return $this->json(ApiResponse::get($products, 200, [
+            'pagination' => [
+                'page' => $page,
+                'limit' => $limit,
+            ]
+        ]),
             200,
             [],
-            ['groups' => ['store', 'store:products', 'product']]
+            ['groups' => ['store:products', 'product']]
         );
     }
 
@@ -275,7 +292,6 @@ class StoreController extends AbstractController
         $user = $this->getUser();
 
         $content = json_decode($request->getContent(), true);
-
         $productIds = $content['products'] ?? null;
         if (is_null($productIds)) throw new ProductNotFoundApiException();
 
@@ -293,7 +309,7 @@ class StoreController extends AbstractController
 
 
         $storeProducts = $storeService->getStoreProduct($store->getId(), $productIds);
-        $command = $commandService->addProductFromStoreProducts($command, $storeProducts);
+        $command = $commandService->addProductFromStoreProducts($command, $storeProducts, $productIds);
         $command = $commandService->saveCommand($command, true);
         return $this->json(ApiResponse::get($command),
             200,
@@ -337,7 +353,7 @@ class StoreController extends AbstractController
         $slots = $slotService->availableListPagination($store, $page, $limit);
         return $this->json(ApiResponse::get($slots, 200, [
             'items-actions' => [
-                '@booking' => '/booking'
+                '@booking' => ''
             ],
             'pagination' => [
                 'page' => $page,
@@ -352,6 +368,7 @@ class StoreController extends AbstractController
 
     /**
      * Book a Slot form Store (Only Client)
+     * @OA\RequestBody(@Model(type=SlotBookingInput::class, groups={"slot:booking:input"}))
      * @OA\Response(
      *     response=200,
      *     description="Return all slots from store",
@@ -372,17 +389,26 @@ class StoreController extends AbstractController
      * @param Request $request
      * @return Response
      */
-    #[Route('/{storeId}/slots/{slotId}/booking', name: 'app_store_slots_booking', methods: ['POST'], format: 'application/json')]
+    #[Route('/{storeId}/slots/{slotId}', name: 'app_store_slots_booking', methods: ['POST'], format: 'application/json')]
     public function slotBooking(
         int       $storeId,
         int       $slotId,
         StoreService $storeService,
         SlotService $slotService,
+        CommandService $commandService,
         Request $request
     ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
+
+        $content = json_decode($request->getContent(), true);
+        if (is_null($content['command'] ?? null)) throw new CommandNotFoundApiException();
+        $command = $commandService->get($content['command']);
+        if (
+            is_null($command ?? null) ||
+            $command->getUser()->getId() !== $user->getId()
+        ) throw new CommandNotFoundApiException();
 
         $store = $storeService->get($storeId);
         if (is_null($store ?? null)) throw new StoreNotFoundApiException();
@@ -390,7 +416,7 @@ class StoreController extends AbstractController
         $slot = $slotService->getByIdAndStore($slotId, $store);
         if (is_null($slot ?? null)) throw new SlotNotFoundApiException();
 
-        $slots = $slotService->bookSlot($slot, $user, true);
+        $slots = $slotService->bookSlot($slot, $command, true);
         if (is_null($slots ?? null)) throw new SlotAlreadyBookedApiException();
         return $this->json(ApiResponse::get($slots),
             200,

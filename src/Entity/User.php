@@ -26,7 +26,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     operations: [
         new GetCollection(),
-        new Post(processor: UserPasswordHasher::class),
+        new Post(processor: UserPasswordHasher::class, denormalizationContext: [ 'groups' => ['user:create'] ]),
         new Get(),
         new Put(processor: UserPasswordHasher::class),
         new Patch(processor: UserPasswordHasher::class),
@@ -43,11 +43,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(groups: ['user'])]
+    #[Groups(groups: ['user', 'user:create'])]
     private string $name;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(groups: ['user', 'user:login'])]
+    #[Groups(groups: ['user', 'user:login', 'user:create'])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -60,7 +60,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     private string $password;
 
     #[Assert\NotBlank(groups: ['user:login'])]
-    #[Groups(['user:login'])]
+    #[Groups(['user:login', 'user:create'])]
     private ?string $plainPassword = null;
 
     #[ORM\ManyToOne(inversedBy: 'sellers')]
@@ -72,14 +72,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Command::class)]
     private Collection $commands;
 
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Slot::class)]
-    private Collection $slots;
-
     public function __construct()
     {
         $this->messages = new ArrayCollection();
         $this->commands = new ArrayCollection();
-        $this->slots = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -258,36 +254,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, JsonSer
             // set the owning side to null (unless already changed)
             if ($command->getUser() === $this) {
                 $command->setUser(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Slot>
-     */
-    public function getSlots(): Collection
-    {
-        return $this->slots;
-    }
-
-    public function addSlot(Slot $slot): self
-    {
-        if (!$this->slots->contains($slot)) {
-            $this->slots->add($slot);
-            $slot->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeSlot(Slot $slot): self
-    {
-        if ($this->slots->removeElement($slot)) {
-            // set the owning side to null (unless already changed)
-            if ($slot->getUser() === $this) {
-                $slot->setUser(null);
             }
         }
 

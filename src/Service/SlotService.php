@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Command;
 use App\Entity\Slot;
 use App\Entity\SlotAvailableDTO;
 use App\Entity\Store;
@@ -21,11 +22,10 @@ class SlotService
     private function slotToSlotAvailable(Slot $slot): SlotAvailableDTO {
         $sa = new SlotAvailableDTO();
         $sa->setId($slot->getId());
-        $sa->setUser($slot->getUser());
         $sa->setStore($slot->getStore());
         $sa->setStartDate($slot->getStartDate());
         $sa->setEndDate($slot->getEndDate());
-        $sa->setAvailable(is_null($slot->getUser() ?? null));
+        $sa->setAvailable(is_null($slot->getCommand() ?? null));
         return $sa;
     }
 
@@ -71,13 +71,14 @@ class SlotService
     /**
      * return null if already booked
      * @param Slot $slot
-     * @param User $user
+     * @param Command $command
      * @param bool $flush
      * @return SlotAvailableDTO|null
      */
-    public function bookSlot(Slot $slot, User $user, bool $flush = false): SlotAvailableDTO | null {
-        if (!is_null($slot->getUser() ?? null)) return null;
-        $slot->setUser($user);
+    public function bookSlot(Slot $slot, Command $command, bool $flush = false): SlotAvailableDTO | null {
+        if (!is_null($slot->getCommand() ?? null)) return null;
+        $slot->setCommand($command);
+        $command->setSlot($slot);
         $this->slotRepository->save($slot, $flush);
         return $this->slotToSlotAvailable($slot);
     }

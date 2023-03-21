@@ -23,8 +23,8 @@ class Slot
     #[ORM\ManyToOne(inversedBy: 'slots')]
     private ?Store $store = null;
 
-    #[ORM\ManyToOne(inversedBy: 'slots')]
-    private ?User $user = null;
+    #[ORM\OneToOne(inversedBy: 'slot')]
+    private ?Command $command = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(groups: ['slot', 'slot:min'])]
@@ -51,18 +51,6 @@ class Slot
         return $this;
     }
 
-    public function getUser(): ?User
-    {
-        return $this->user;
-    }
-
-    public function setUser(?User $user): self
-    {
-        $this->user = $user;
-
-        return $this;
-    }
-
     public function getStartDate(): ?\DateTimeInterface
     {
         return $this->startDate;
@@ -85,5 +73,21 @@ class Slot
         $this->endDate = $endDate;
 
         return $this;
+    }
+
+    /**
+     * @return Command|null
+     */
+    public function getCommand(): ?Command
+    {
+        return $this->command;
+    }
+
+    /**
+     * @param Command|null $command
+     */
+    public function setCommand(?Command $command): void
+    {
+        $this->command = $command;
     }
 }
